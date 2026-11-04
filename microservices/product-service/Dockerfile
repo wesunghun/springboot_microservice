@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jre-noble AS builder
 WORKDIR extracted
 ADD ./build/libs/*.jar app.jar
-RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination .
+RUN java -Djarmode=layertools -jar app.jar extract
 
 FROM eclipse-temurin:21-jre-noble
 WORKDIR application
