@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
@@ -46,6 +47,10 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   private final String recommendationServiceUrl;
   private final String reviewServiceUrl;
 
+  private final String productServiceBaseUrl;
+  private final String recommendationServiceBaseUrl;
+  private final String reviewServiceBaseUrl;
+
   public ProductCompositeIntegration(
       @Qualifier("publishEventScheduler") Scheduler publishEventScheduler,
       WebClient.Builder webClient,
@@ -63,9 +68,13 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     this.mapper = mapper;
     this.streamBridge = streamBridge;
 
-    productServiceUrl = "http://" + productServiceHost + ":" + productServicePort + "/product";
-    recommendationServiceUrl = "http://" + recommendationServiceHost + ":" + recommendationServicePort + "/recommendation";
-    reviewServiceUrl = "http://" + reviewServiceHost + ":" + reviewServicePort + "/review";
+    productServiceBaseUrl = "http://" + productServiceHost + ":" + productServicePort;
+    recommendationServiceBaseUrl = "http://" + recommendationServiceHost + ":" + recommendationServicePort;
+    reviewServiceBaseUrl = "http://" + reviewServiceHost + ":" + reviewServicePort;
+
+    productServiceUrl = productServiceBaseUrl + "/product";
+    recommendationServiceUrl = recommendationServiceBaseUrl + "/recommendation";
+    reviewServiceUrl = reviewServiceBaseUrl + "/review";
   }
 
   // ───────────── Product ─────────────
@@ -181,5 +190,28 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     } catch (JacksonException jex) { // 교재: IOException
       return ex.getMessage();
     }
+  }
+
+    // ───────────── 상태 확인 ─────────────
+
+  public Mono<Health> getProductHealth() {
+    return getHealth(productServiceBaseUrl);
+  }
+
+  public Mono<Health> getRecommendationHealth() {
+    return getHealth(recommendationServiceBaseUrl);
+  }
+
+  public Mono<Health> getReviewHealth() {
+    return getHealth(reviewServiceBaseUrl);
+  }
+
+  private Mono<Health> getHealth(String baseUrl) {
+    String url = baseUrl + "/actuator/health";
+    LOG.debug("Will call the Health API on URL: {}", url);
+    return webClient.get().uri(url).retrieve().bodyToMono(String.class)
+        .map(s -> Health.up().build())
+        .onErrorResume(ex -> Mono.just(Health.down(ex).build()))
+        .log(LOG.getName(), FINE);
   }
 }
