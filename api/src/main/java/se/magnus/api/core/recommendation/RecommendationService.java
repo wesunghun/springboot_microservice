@@ -1,26 +1,20 @@
 package se.magnus.api.core.recommendation;
 
-import java.util.List;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface RecommendationService {
 
-  @PostMapping(
-    value    = "/recommendation",
-    consumes = "application/json",
-    produces = "application/json")
-  Recommendation createRecommendation(@RequestBody Recommendation body);
+  Mono<Recommendation> createRecommendation(Recommendation body);   // 이벤트로 호출 (@PostMapping 제거)
 
-  @GetMapping(
-    value = "/recommendation",
-    produces = "application/json")
-  List<Recommendation> getRecommendations(
-    @RequestParam(value = "productId", required = true) int productId);
+  /**
+   * Sample usage: "curl $HOST:$PORT/recommendation?productId=1".
+   */
+  @GetMapping(value = "/recommendation", produces = "application/json")
+  Flux<Recommendation> getRecommendations(@RequestParam(value = "productId", required = true) int productId);
 
-  @DeleteMapping(value = "/recommendation")
-  void deleteRecommendations(@RequestParam(value = "productId", required = true) int productId);
+  Mono<Void> deleteRecommendations(int productId);                  // 이벤트로 호출 (@DeleteMapping 제거)
 }
