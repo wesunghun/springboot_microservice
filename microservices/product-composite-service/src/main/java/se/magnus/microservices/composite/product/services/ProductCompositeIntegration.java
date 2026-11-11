@@ -43,38 +43,25 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   private final StreamBridge streamBridge;
   private final Scheduler publishEventScheduler;
 
-  private final String productServiceUrl;
-  private final String recommendationServiceUrl;
-  private final String reviewServiceUrl;
+    // 9장: 호스트·포트 대신 유레카에 등록된 서비스 이름 사용
+  private static final String PRODUCT_SERVICE_BASE_URL = "http://product";
+  private static final String RECOMMENDATION_SERVICE_BASE_URL = "http://recommendation";
+  private static final String REVIEW_SERVICE_BASE_URL = "http://review";
 
-  private final String productServiceBaseUrl;
-  private final String recommendationServiceBaseUrl;
-  private final String reviewServiceBaseUrl;
+  private final String productServiceUrl = PRODUCT_SERVICE_BASE_URL + "/product";
+  private final String recommendationServiceUrl = RECOMMENDATION_SERVICE_BASE_URL + "/recommendation";
+  private final String reviewServiceUrl = REVIEW_SERVICE_BASE_URL + "/review";
 
   public ProductCompositeIntegration(
       @Qualifier("publishEventScheduler") Scheduler publishEventScheduler,
-      WebClient.Builder webClient,
+      WebClient.Builder webClientBuilder,
       ObjectMapper mapper,
-      StreamBridge streamBridge,
-      @Value("${app.product-service.host}") String productServiceHost,
-      @Value("${app.product-service.port}") int productServicePort,
-      @Value("${app.recommendation-service.host}") String recommendationServiceHost,
-      @Value("${app.recommendation-service.port}") int recommendationServicePort,
-      @Value("${app.review-service.host}") String reviewServiceHost,
-      @Value("${app.review-service.port}") int reviewServicePort) {
+      StreamBridge streamBridge) {
 
     this.publishEventScheduler = publishEventScheduler;
-    this.webClient = webClient.build();
+    this.webClient = webClientBuilder.build();   // 로드 밸런서가 붙은 빌더 (② 참고)
     this.mapper = mapper;
     this.streamBridge = streamBridge;
-
-    productServiceBaseUrl = "http://" + productServiceHost + ":" + productServicePort;
-    recommendationServiceBaseUrl = "http://" + recommendationServiceHost + ":" + recommendationServicePort;
-    reviewServiceBaseUrl = "http://" + reviewServiceHost + ":" + reviewServicePort;
-
-    productServiceUrl = productServiceBaseUrl + "/product";
-    recommendationServiceUrl = recommendationServiceBaseUrl + "/recommendation";
-    reviewServiceUrl = reviewServiceBaseUrl + "/review";
   }
 
   // ───────────── Product ─────────────
@@ -95,7 +82,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     return webClient.get().uri(url).retrieve()
         .bodyToMono(Product.class)
         .log(LOG.getName(), FINE)
-        .onErrorMap(WebClientResponseException.class, this::handleException);
+        .onErrorMap(WebClientResponseException.class, ex -> handleException(ex));
   }
 
   @Override
@@ -117,9 +104,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   @Override
   public Flux<Recommendation> getRecommendations(int productId) {
     String url = recommendationServiceUrl + "?productId=" + productId;
-    LOG.debug("Will call the getRecommendations API on URL: {}", url);
 
-    // 오류가 나도 전체 응답은 성공시키고 빈 결과 반환
     return webClient.get().uri(url).retrieve()
         .bodyToFlux(Recommendation.class)
         .log(LOG.getName(), FINE)
@@ -194,16 +179,16 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     // ───────────── 상태 확인 ─────────────
 
-  public Mono<Health> getProductHealth() {
-    return getHealth(productServiceBaseUrl);
+    public Mono<Health> getProductHealth() {
+    return getHealth(PRODUCT_SERVICE_BASE_URL);
   }
 
   public Mono<Health> getRecommendationHealth() {
-    return getHealth(recommendationServiceBaseUrl);
+    return getHealth(RECOMMENDATION_SERVICE_BASE_URL);
   }
 
   public Mono<Health> getReviewHealth() {
-    return getHealth(reviewServiceBaseUrl);
+    return getHealth(REVIEW_SERVICE_BASE_URL);
   }
 
   private Mono<Health> getHealth(String baseUrl) {

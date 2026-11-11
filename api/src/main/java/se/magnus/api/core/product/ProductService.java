@@ -7,10 +7,10 @@ import reactor.core.publisher.Mono;
 
 public interface ProductService {
 
-  Mono<Product> createProduct(Product body);       // @PostMapping 제거 (이벤트로 호출)
+  Mono<Product> createProduct(Product body); 
 
   @GetMapping(value = "/product/{productId}", produces = "application/json")
   Mono<Product> getProduct(@PathVariable int productId);
 
-  Mono<Void> deleteProduct(int productId);         // @DeleteMapping 제거 (이벤트로 호출)
+  Mono<Void> deleteProduct(int productId);
 }
