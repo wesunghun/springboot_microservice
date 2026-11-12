@@ -1,3 +1,4 @@
+server.forward-headers-strategy: framework
 spring.web.error.include-message: always
 springdoc:
   swagger-ui.path: /openapi/swagger-ui.html
