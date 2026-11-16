@@ -13,3 +13,10 @@ eureka:
     response-cache-update-interval-ms: 5000
 
 management.endpoints.web.exposure.include: "*"
+
+app:
+  eureka-username: u
+  eureka-password: p
+  eureka-server: localhost
+  
+eureka.client.serviceUrl.defaultZone: http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/

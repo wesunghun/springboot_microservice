@@ -35,6 +35,8 @@ dependencies {
 	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
 	implementation 'org.springframework.boot:spring-boot-starter-webclient'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
 }
 
 dependencyManagement {

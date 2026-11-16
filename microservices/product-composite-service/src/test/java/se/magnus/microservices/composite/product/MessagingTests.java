@@ -36,11 +36,9 @@ import se.magnus.api.core.recommendation.Recommendation;
 import se.magnus.api.core.review.Review;
 import se.magnus.api.event.Event;
 
-@SpringBootTest(
-  webEnvironment = RANDOM_PORT,
-  properties = {"spring.main.allow-bean-definition-overriding=true", "eureka.client.enabled=false"})
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class}, properties = {"spring.security.oauth2.resourceserver.jwt.issuer-uri=", "spring.main.allow-bean-definition-overriding=true", "eureka.client.enabled=false"})
 @Import({TestChannelBinderConfiguration.class})
-@AutoConfigureWebTestClient                      // 🔧 Boot 4 필수
+@AutoConfigureWebTestClient                    
 class MessagingTests {
 
   private static final Logger LOG = LoggerFactory.getLogger(MessagingTests.class);
