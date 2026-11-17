@@ -1,0 +1,13 @@
+# 설정 서버를 끈 테스트용 — config-repo의 product.yml·application.yml에서 필요한 값만
+spring.data.mongodb.auto-index-creation: true
+
+spring.cloud.function.definition: messageProcessor
+
+spring.cloud.stream:
+  defaultBinder: rabbit
+  default.contentType: application/json
+  bindings.messageProcessor-in-0:
+    destination: products
+    group: productsGroup
+
+spring.web.error.include-message: always

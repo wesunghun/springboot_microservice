@@ -1,0 +1,10 @@
+spring.data.mongodb.auto-index-creation: true
+
+spring.cloud.function.definition: messageProcessor
+
+spring.cloud.stream:
+  defaultBinder: rabbit
+  default.contentType: application/json
+  bindings.messageProcessor-in-0:
+    destination: recommendations
+    group: recommendationsGroup
