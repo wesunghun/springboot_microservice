@@ -1,5 +1,4 @@
 server.forward-headers-strategy: framework
-spring.web.error.include-message: always
 springdoc:
   swagger-ui.path: /openapi/swagger-ui.html
   api-docs.path: /openapi/v3/api-docs
@@ -30,19 +29,6 @@ spring.cloud.stream:
       destination: reviews
       producer:
         required-groups: auditGroup
-
-spring.cloud.stream.kafka.binder:
-  brokers: 127.0.0.1
-  defaultBrokerPort: 9092
-
-spring.rabbitmq:
-  host: 127.0.0.1
-  port: 5672
-  username: guest
-  password: guest
-
-management.endpoint.health.show-details: "ALWAYS"
-management.endpoints.web.exposure.include: "*"
 
 api:
 
@@ -116,7 +102,6 @@ api:
 
         This means that a delete request of a non-existing product will return **200 Ok**.
 
-
 server.port: 7001
 
 logging:
@@ -124,33 +109,41 @@ logging:
     root: INFO
     se.magnus: DEBUG
 
-spring.application.name: product-composite
-
-app:                                            # ← 11장: 유레카 계정
-  eureka-username: u
-  eureka-password: p
-  eureka-server: localhost
-app.auth-server: localhost                      # ← 11장: 로컬 실행은 localhost
-
 spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:9999
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/   # ← 11장
-    initialInstanceInfoReplicationIntervalSeconds: 5
-    registryFetchIntervalSeconds: 5
-  instance:
-    leaseRenewalIntervalInSeconds: 5
-    leaseExpirationDurationInSeconds: 5
+
+resilience4j.timelimiter:
+  instances:
+    product:
+      timeoutDuration: 2s
+
+management.health.circuitbreakers.enabled: true
+
+resilience4j.circuitbreaker:
+  instances:
+    product:
+      allowHealthIndicatorToFail: false
+      registerHealthIndicator: true
+      slidingWindowType: COUNT_BASED
+      slidingWindowSize: 5
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      ignoreExceptions:
+        - se.magnus.api.exceptions.InvalidInputException
+        - se.magnus.api.exceptions.NotFoundException
+
+resilience4j.retry:
+  instances:
+    product:
+      maxAttempts: 3
+      waitDuration: 1000
+      retryExceptions:
+      - org.springframework.web.reactive.function.client.WebClientResponseException$InternalServerError
 
 ---
 spring.config.activate.on-profile: docker
-
-app.eureka-server: eureka
-app.auth-server: auth-server                    # ← 11장: 컨테이너 안에서는 서비스 이름
-spring.rabbitmq.host: rabbitmq
-spring.cloud.stream.kafka.binder.brokers: kafka
 
 server.port: 8080
 

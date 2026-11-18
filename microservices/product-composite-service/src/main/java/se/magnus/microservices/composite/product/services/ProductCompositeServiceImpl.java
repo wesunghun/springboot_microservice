@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import reactor.core.publisher.Mono;
@@ -68,14 +69,15 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
   }
 
   @Override
-  public Mono<ProductAggregate> getProduct(int productId) {
+  public Mono<ProductAggregate> getProduct(int productId, @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
+    @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent) {
     return Mono.zip(
         values -> createProductAggregate(
             (Product) values[0],
             (List<Recommendation>) values[1],
             (List<Review>) values[2],
             serviceUtil.getServiceAddress()),
-        integration.getProduct(productId),
+        integration.getProduct(productId, delay, faultPercent),
         integration.getRecommendations(productId).collectList(),
         integration.getReviews(productId).collectList())
         .doOnError(ex -> LOG.warn("getCompositeProduct failed: {}", ex.toString()))

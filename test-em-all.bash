@@ -165,6 +165,57 @@ function setupTestdata() {
   recreateComposite "$PROD_ID_REVS_RECS" "$body"
 
 }
+function cbState() {
+  docker compose exec -T product-composite curl -s http://localhost:8080/actuator/health \
+    | jq -r .components.circuitBreakers.details.product.details.state
+}
+
+function cbTransition() {      # $1 = -3, -2, -1 (최근 이벤트 순서)
+  docker compose exec -T product-composite curl -s \
+    http://localhost:8080/actuator/circuitbreakerevents/product/STATE_TRANSITION \
+    | jq -r ".circuitBreakerEvents[$1].stateTransition"
+}
+
+function testCircuitBreaker() {
+  echo "Start Circuit Breaker tests!"
+
+  # 1) 처음엔 CLOSED
+  assertEqual "CLOSED" "$(cbState)"
+
+  # 2) 3초 지연 호출 3번 → 시간 제한기(2초) 초과로 500, 실패율 100% → OPEN
+  for ((n=0; n<3; n++)); do
+    assertCurl 500 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS?delay=3 $AUTH -s"
+    echo "  message: $(echo $RESPONSE | jq -r .message)"
+  done
+  assertEqual "OPEN" "$(cbState)"
+
+  # 3) OPEN이면 지연 호출도 정상 호출도 즉시 fallback (200)
+  assertCurl 200 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS?delay=3 $AUTH -s"
+  assertEqual "Fallback product$PROD_ID_REVS_RECS" "$(echo "$RESPONSE" | jq -r .name)"
+  assertCurl 200 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS $AUTH -s"
+  assertEqual "Fallback product$PROD_ID_REVS_RECS" "$(echo "$RESPONSE" | jq -r .name)"
+
+  # 4) fallback에서도 13번은 404
+  assertCurl 404 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_NOT_FOUND $AUTH -s"
+  assertEqual "Product Id: $PROD_ID_NOT_FOUND not found in fallback cache!" "$(echo $RESPONSE | jq -r .message)"
+
+  # 5) 10초 기다리면 HALF_OPEN
+  echo "Will sleep for 10 sec waiting for the CB to go Half Open..."
+  sleep 10
+  assertEqual "HALF_OPEN" "$(cbState)"
+
+  # 6) 정상 호출 3번 → CLOSED
+  for ((n=0; n<3; n++)); do
+    assertCurl 200 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS $AUTH -s"
+    assertEqual "product name C" "$(echo "$RESPONSE" | jq -r .name)"
+  done
+  assertEqual "CLOSED" "$(cbState)"
+
+  # 7) 상태 전이 기록
+  assertEqual "State transition from CLOSED to OPEN"      "$(cbTransition -3)"
+  assertEqual "State transition from OPEN to HALF_OPEN"   "$(cbTransition -2)"
+  assertEqual "State transition from HALF_OPEN to CLOSED" "$(cbTransition -1)"
+}
 
 set -e
 
@@ -234,6 +285,17 @@ assertCurl 200 "curl -ks  https://$HOST:$PORT/openapi/v3/api-docs"
 assertEqual "3.1.0" "$(echo $RESPONSE | jq -r .openapi)"
 assertEqual "https://$HOST:$PORT" "$(echo $RESPONSE | jq -r '.servers[0].url')"
 assertCurl 200 "curl -ks  https://$HOST:$PORT/openapi/v3/api-docs.yaml"
+
+assertCurl 401 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS -s"
+
+# reader(읽기 전용) 토큰 → 조회 200, 삭제 403
+READER_ACCESS_TOKEN=$(curl -k https://reader:secret-reader@$HOST:$PORT/oauth2/token \
+  -d grant_type=client_credentials -d scope="product:read" -s | jq .access_token -r)
+READER_AUTH="-H \"Authorization: Bearer $READER_ACCESS_TOKEN\""
+assertCurl 200 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS $READER_AUTH -s"
+assertCurl 403 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS $READER_AUTH -X DELETE -s"
+
+testCircuitBreaker
 
 if [[ $@ == *"stop"* ]]
 then

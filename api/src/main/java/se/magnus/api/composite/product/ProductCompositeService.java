@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +41,7 @@ public interface ProductCompositeService {
         @ApiResponse(responseCode = "422", description = "${api.responseCodes.unprocessableEntity.description}")
     })
     @GetMapping(value = "/product-composite/{productId}", produces = "application/json")
-    Mono<ProductAggregate> getProduct(@PathVariable int productId);
+  Mono<ProductAggregate> getProduct(@PathVariable int productId, @RequestParam(value = "delay", required = false, defaultValue = "0") int delay, @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent);
 
     @Operation(
         summary = "${api.product-composite.delete-composite-product.description}",
