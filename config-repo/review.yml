@@ -14,7 +14,7 @@ spring.datasource.hikari.initializationFailTimeout: 60000
 logging:
   level:
     root: INFO
-    se.magnus: DEBUG
+    se.magnus: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 

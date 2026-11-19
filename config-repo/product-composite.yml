@@ -107,7 +107,8 @@ server.port: 7001
 logging:
   level:
     root: INFO
-    se.magnus: DEBUG
+    se.magnus: INFO
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: INFO
 
 spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:9999
 

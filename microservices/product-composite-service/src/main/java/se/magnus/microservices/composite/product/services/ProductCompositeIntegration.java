@@ -62,13 +62,13 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
   public ProductCompositeIntegration(
       @Qualifier("publishEventScheduler") Scheduler publishEventScheduler,
-      WebClient.Builder webClientBuilder,
+      WebClient webClient,
       ObjectMapper mapper,
       StreamBridge streamBridge,
       ServiceUtil serviceUtil) {
 
     this.publishEventScheduler = publishEventScheduler;
-    this.webClient = webClientBuilder.build();   // 로드 밸런서가 붙은 빌더 (② 참고)
+    this.webClient = webClient; 
     this.mapper = mapper;
     this.streamBridge = streamBridge;
     this.serviceUtil = serviceUtil;

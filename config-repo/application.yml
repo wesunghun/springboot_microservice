@@ -29,6 +29,12 @@ spring.web.error.include-message: always          # 🔧 Boot 4 이름 (교재: 
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"
 
+management.tracing.sampling.probability: 1.0
+management.tracing.export.zipkin.endpoint: http://zipkin:9411/api/v2/spans
+
+logging.pattern.level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+logging.include-application-name: false
+
 ---
 spring.config.activate.on-profile: docker
 

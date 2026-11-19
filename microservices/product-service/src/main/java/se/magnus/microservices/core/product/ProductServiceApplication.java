@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import reactor.core.publisher.Hooks;
+
 @SpringBootApplication
 @ComponentScan("se.magnus")
 public class ProductServiceApplication {
@@ -15,6 +17,8 @@ public class ProductServiceApplication {
 
   public static void main(String[] args) {
     ConfigurableApplicationContext ctx = SpringApplication.run(ProductServiceApplication.class, args);
+
+    Hooks.enableAutomaticContextPropagation();
 
     String mongodDbHost = ctx.getEnvironment().getProperty("spring.data.mongodb.host");
     String mongodDbPort = ctx.getEnvironment().getProperty("spring.data.mongodb.port");

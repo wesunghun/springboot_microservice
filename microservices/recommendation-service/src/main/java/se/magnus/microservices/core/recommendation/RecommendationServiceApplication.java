@@ -16,6 +16,8 @@ import org.springframework.data.mongodb.core.index.IndexResolver;
 import org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
+
+import reactor.core.publisher.Hooks;
 import se.magnus.microservices.core.recommendation.persistence.RecommendationEntity;
 
 @SpringBootApplication
@@ -26,6 +28,8 @@ public class RecommendationServiceApplication {
 
   public static void main(String[] args) {
     ConfigurableApplicationContext ctx = SpringApplication.run(RecommendationServiceApplication.class, args);
+
+    Hooks.enableAutomaticContextPropagation();
 
     String mongodDbHost = ctx.getEnvironment().getProperty("spring.data.mongodb.host");
     String mongodDbPort = ctx.getEnvironment().getProperty("spring.data.mongodb.port");

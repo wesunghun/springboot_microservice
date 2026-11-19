@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
+import reactor.core.publisher.Hooks;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
@@ -34,6 +35,7 @@ public class ReviewServiceApplication {
   }
 
   public static void main(String[] args) {
+    Hooks.enableAutomaticContextPropagation();
     SpringApplication.run(ReviewServiceApplication.class, args);
   }
 }

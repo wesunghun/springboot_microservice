@@ -11,7 +11,7 @@ spring.data.mongodb.auto-index-creation: true
 logging:
   level:
     root: INFO
-    se.magnus: DEBUG
+    se.magnus: INFO
     org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
 
 spring.cloud.function.definition: messageProcessor

@@ -23,6 +23,10 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
+	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+	implementation 'org.springframework.boot:spring-boot-zipkin'
+	implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
 	implementation "io.github.resilience4j:resilience4j-spring-boot4:${resilience4jVersion}"
 	implementation "io.github.resilience4j:resilience4j-reactor:${resilience4jVersion}"
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'

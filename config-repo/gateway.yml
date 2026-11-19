@@ -120,6 +120,7 @@ logging:
     root: INFO
     org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
     org.springframework.cloud.gateway: TRACE
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
 
 ---
 spring.config.activate.on-profile: docker
