@@ -4,14 +4,12 @@ app:
 spring.rabbitmq:
   host: 127.0.0.1
   port: 5672
-  username: guest
-  password: guest
 
 spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
 
-spring.web.error.include-message: always          # 🔧 Boot 4 이름 (교재: server.error.include-message)
+spring.web.error.include-message: always
 
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"

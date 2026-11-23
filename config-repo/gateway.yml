@@ -8,20 +8,11 @@ server.ssl:
 
 spring.application.name: gateway
 
-app:
-  auth-server: localhost
 
 spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}
 
 spring.cloud.gateway.server.webflux.trusted-proxies: .*
 spring.cloud.gateway.server.webflux.routes:      # 🔧 교재: spring.cloud.gateway.routes
-
-- id: config-server
-  uri: ${spring.cloud.config.uri}
-  predicates:
-  - Path=/config/**
-  filters:
-  - RewritePath=/config/(?<segment>.*), /$\{segment}
 
 - id: product-composite
   uri: http://product-composite

@@ -36,7 +36,7 @@ import se.magnus.api.core.recommendation.Recommendation;
 import se.magnus.api.core.review.Review;
 import se.magnus.api.event.Event;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class}, properties = {"spring.security.oauth2.resourceserver.jwt.issuer-uri=", "spring.main.allow-bean-definition-overriding=true", "spring.cloud.config.enabled=false"})
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class}, properties = {"spring.security.oauth2.resourceserver.jwt.issuer-uri=", "spring.main.allow-bean-definition-overriding=true"})
 @Import({TestChannelBinderConfiguration.class})
 @AutoConfigureWebTestClient                    
 class MessagingTests {

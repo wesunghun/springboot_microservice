@@ -4,9 +4,9 @@
 #
 #   ./test-em-all.bash
 #
-# 쿠버네티스(dev-env):
+# 쿠버네티스(17장~: 인그레스 + cert-manager):
 #
-#   PORT=30443 USE_K8S=true ./test-em-all.bash
+#   HOST=minikube.me PORT=8443 USE_K8S=true ./test-em-all.bash
 #
 : ${HOST=localhost}
 : ${PORT=8443}
@@ -299,7 +299,11 @@ assertCurl 200 "curl -ks  https://$HOST:$PORT/openapi/swagger-ui/index.html"
 assertCurl 200 "curl -ks  https://$HOST:$PORT/openapi/swagger-ui/oauth2-redirect.html"
 assertCurl 200 "curl -ks  https://$HOST:$PORT/openapi/v3/api-docs"
 assertEqual "3.1.0" "$(echo $RESPONSE | jq -r .openapi)"
-assertEqual "https://$HOST:$PORT" "$(echo $RESPONSE | jq -r '.servers[0].url')"
+# 17장: 인그레스 뒤에서는 servers url 에 포트가 빠지므로 도커 컴포즈일 때만 확인
+if [[ $USE_K8S == "false" ]]
+then
+  assertEqual "https://$HOST:$PORT" "$(echo $RESPONSE | jq -r '.servers[0].url')"
+fi
 assertCurl 200 "curl -ks  https://$HOST:$PORT/openapi/v3/api-docs.yaml"
 
 assertCurl 401 "curl -k https://$HOST:$PORT/product-composite/$PROD_ID_REVS_RECS -s"
