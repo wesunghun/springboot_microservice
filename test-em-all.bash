@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 #
-# Sample usage:
+# 도커 컴포즈:
 #
-#   HOST=localhost PORT=7001 ./test-em-all.bash
+#   ./test-em-all.bash
+#
+# 쿠버네티스(dev-env):
+#
+#   PORT=30443 USE_K8S=true ./test-em-all.bash
 #
 : ${HOST=localhost}
 : ${PORT=8443}
+: ${USE_K8S=false}
+: ${NAMESPACE=hands-on}
 : ${PROD_ID_REVS_RECS=1}
 : ${PROD_ID_NOT_FOUND=13}
 : ${PROD_ID_NO_RECS=113}
@@ -165,14 +171,23 @@ function setupTestdata() {
   recreateComposite "$PROD_ID_REVS_RECS" "$body"
 
 }
+function execComposite() {   # 16장: 도커 컴포즈 / 쿠버네티스 둘 다
+  if [[ $USE_K8S == "false" ]]
+  then
+    docker compose exec -T product-composite "$@"
+  else
+    kubectl -n $NAMESPACE exec deploy/product-composite -- "$@"
+  fi
+}
+
 function cbState() {
-  docker compose exec -T product-composite curl -s http://localhost:8080/actuator/health \
+  execComposite curl -s http://localhost/actuator/health \
     | jq -r .components.circuitBreakers.details.product.details.state
 }
 
 function cbTransition() {      # $1 = -3, -2, -1 (최근 이벤트 순서)
-  docker compose exec -T product-composite curl -s \
-    http://localhost:8080/actuator/circuitbreakerevents/product/STATE_TRANSITION \
+  execComposite curl -s \
+    http://localhost/actuator/circuitbreakerevents/product/STATE_TRANSITION \
     | jq -r ".circuitBreakerEvents[$1].stateTransition"
 }
 
@@ -223,6 +238,7 @@ echo "Start Tests:" `date`
 
 echo "HOST=${HOST}"
 echo "PORT=${PORT}"
+echo "USE_K8S=${USE_K8S}"
 
 if [[ $@ == *"start"* ]]
 then

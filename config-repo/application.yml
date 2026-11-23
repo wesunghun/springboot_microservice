@@ -1,18 +1,5 @@
 app:
   auth-server: localhost
-  eureka-server: localhost
-  eureka-username: u
-  eureka-password: p
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/
-    initialInstanceInfoReplicationIntervalSeconds: 5
-    registryFetchIntervalSeconds: 5
-  instance:
-    leaseRenewalIntervalInSeconds: 5
-    leaseExpirationDurationInSeconds: 5
 
 spring.rabbitmq:
   host: 127.0.0.1
@@ -24,15 +11,21 @@ spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
 
-spring.web.error.include-message: always          # 🔧 Boot 4 이름 (교재: server.error.include-message)   # 🔧 Boot 4 이름 (교재: server.error.include-message)
+spring.web.error.include-message: always          # 🔧 Boot 4 이름 (교재: server.error.include-message)
 
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"
+management.endpoint.health.probes.enabled: true
+management.health.rabbit.enabled: true
+management.health.kafka.enabled: false
 
 management.tracing.sampling.probability: 1.0
 management.tracing.export.zipkin.endpoint: http://zipkin:9411/api/v2/spans
 
-logging.pattern.level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 10s
+
+logging.pattern.correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "
 logging.include-application-name: false
 
 ---
@@ -43,4 +36,16 @@ spring.cloud.stream.kafka.binder.brokers: kafka
 
 app:
   auth-server: auth-server
-  eureka-server: eureka
+
+---
+spring.config.activate.on-profile: kafka
+
+management.health.rabbit.enabled: false
+management.health.kafka.enabled: true
+
+---
+spring.config.activate.on-profile: prod
+spring.rabbitmq.host: 172.17.0.1
+
+# 운영(prod)에서는 health, info, circuitbreakerevents 만 노출
+management.endpoints.web.exposure.include: health,info,circuitbreakerevents

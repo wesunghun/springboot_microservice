@@ -39,3 +39,7 @@ auth0/env.bash
 
 
 *.env.env
+
+
+kubernetes/helm/**/charts/
+kubernetes/helm/**/Chart.lock

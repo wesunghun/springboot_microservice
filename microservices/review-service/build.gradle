@@ -23,6 +23,7 @@ repositories {
 }
 
 dependencies {
+	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:2.1.1'
 	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
 	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 	implementation 'org.springframework.boot:spring-boot-zipkin'
@@ -50,7 +51,6 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-stream-rabbit'
 	implementation 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
 	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 }
 
 dependencyManagement {

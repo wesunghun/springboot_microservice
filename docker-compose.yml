@@ -1,6 +1,7 @@
 services:
   config-server:
     build: spring-cloud/config-server
+    image: hands-on/config-server
     mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,native
@@ -11,6 +12,7 @@ services:
       - $PWD/config-repo:/config-repo
   product:
     build: microservices/product-service
+    image: hands-on/product-service
     mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -25,9 +27,11 @@ services:
 
   recommendation:
     build: microservices/recommendation-service
+    image: hands-on/recommendation-service
     mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     depends_on:
@@ -38,9 +42,11 @@ services:
 
   review:
     build: microservices/review-service
+    image: hands-on/review-service
     mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     depends_on:
@@ -51,11 +57,13 @@ services:
 
   product-composite:
     build: microservices/product-composite-service
+    image: hands-on/product-composite-service
     mem_limit: 512m
     # ports:
     #   - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     depends_on:
@@ -104,20 +112,11 @@ services:
       timeout: 2s
       retries: 60
   
-  eureka:
-    build: spring-cloud/eureka-server
-    mem_limit: 512m
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
-      - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
-    ports:
-      - "8761:8761"
   
   gateway:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
       - SERVER_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_LOCATION=file:/keystore/edge-test.p12
@@ -125,6 +124,7 @@ services:
     volumes:
       - $PWD/keystore:/keystore
     build: spring-cloud/gateway
+    image: hands-on/gateway
     mem_limit: 512m
     ports:
       - "8443:8443"
@@ -134,13 +134,15 @@ services:
 
   auth-server:
     build: spring-cloud/authorization-server
+    image: hands-on/auth-server
     mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost:9999/actuator/health"]
+      test: ["CMD", "curl", "-fs", "http://localhost/actuator/health"]
       interval: 5s
       timeout: 2s
       retries: 60

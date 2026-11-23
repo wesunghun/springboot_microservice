@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.client.RestTemplate;
@@ -100,12 +98,8 @@ public class ProductCompositeServiceApplication {
     SpringApplication.run(ProductCompositeServiceApplication.class, args);
   }
 
-  // 새 빌더 - 부트가 주입한 빌더(추적 계측 포함)에 로드밸런서 필터만 끼우기
-  @Autowired 
-  private ReactorLoadBalancerExchangeFilterFunction lbFunction;
-
   @Bean 
   public WebClient webClient(WebClient.Builder builder){
-    return builder.filter(lbFunction).build();
+    return builder.build();
   }
 }

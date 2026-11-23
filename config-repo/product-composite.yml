@@ -104,13 +104,17 @@ api:
 
 server.port: 7001
 
+spring.application.name: product-composite
+
+management.endpoint.health.group.readiness.include: readinessState, rabbit
+
 logging:
   level:
     root: INFO
     se.magnus: INFO
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: INFO
 
-spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:9999
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}
 
 
 resilience4j.timelimiter:
@@ -146,7 +150,7 @@ resilience4j.retry:
 ---
 spring.config.activate.on-profile: docker
 
-server.port: 8080
+server.port: 80
 
 ---
 spring.config.activate.on-profile: streaming_partitioned
@@ -166,7 +170,17 @@ spring.cloud.stream.bindings.reviews-out-0.producer:
 ---
 spring.config.activate.on-profile: kafka
 
+management.endpoint.health.group.readiness.include: readinessState
 management.health.rabbit.enabled: false
 spring.cloud.stream.defaultBinder: kafka
 spring.kafka.bootstrap-servers: kafka:9092
 spring.cloud.stream.kafka.binder.replication-factor: 1
+
+---
+spring.config.activate.on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    se.magnus: WARN
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN

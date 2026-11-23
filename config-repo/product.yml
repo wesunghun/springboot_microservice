@@ -51,27 +51,12 @@ management.endpoints.web.exposure.include: "*"
 
 spring.application.name: product
 
-app:
-  eureka-username: u
-  eureka-password: p
-  eureka-server: localhost
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/
-    initialInstanceInfoReplicationIntervalSeconds: 5
-    registryFetchIntervalSeconds: 5
-  instance:
-    leaseRenewalIntervalInSeconds: 5
-    leaseExpirationDurationInSeconds: 5
+management.endpoint.health.group.readiness.include: readinessState, rabbit, mongo
 
 ---
 spring.config.activate.on-profile: docker
 
-app.eureka-server: eureka
-
-server.port: 8080
+server.port: 80
 
 spring.mongodb.host: mongodb
 spring.rabbitmq.host: rabbitmq
@@ -97,7 +82,20 @@ spring.cloud.stream.bindings.messageProcessor-in-0.consumer.instanceIndex: 1
 ---
 spring.config.activate.on-profile: kafka
 
+management.endpoint.health.group.readiness.include: readinessState, mongo
 management.health.rabbit.enabled: false
 spring.cloud.stream.defaultBinder: kafka
 spring.kafka.bootstrap-servers: kafka:9092
 spring.cloud.stream.kafka.binder.replication-factor: 1
+
+---
+spring.config.activate.on-profile: prod
+
+spring.mongodb.host: 172.17.0.1
+spring.rabbitmq.host: 172.17.0.1      # ← 추가
+
+logging:
+  level:
+    root: WARN
+    se.magnus: WARN
+    org.springframework.data.mongodb.core.ReactiveMongoTemplate: WARN

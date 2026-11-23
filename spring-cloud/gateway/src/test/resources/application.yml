@@ -1,2 +1,1 @@
-# 토큰 검증기(JwtDecoder)를 만들 주소 — 실제 접속은 첫 요청 때라 테스트에선 연결하지 않음
-spring.security.oauth2.resourceserver.jwt.issuer-uri: http://auth-server:9999
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://auth-server
