@@ -9,8 +9,9 @@ spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
 
-spring.web.error.include-message: always
+spring.web.error.include-message: always          # 🔧 Boot 4 이름 (교재: server.error.include-message)
 
+management.server.port: 4004
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.probes.enabled: true
@@ -18,7 +19,7 @@ management.health.rabbit.enabled: true
 management.health.kafka.enabled: false
 
 management.tracing.sampling.probability: 1.0
-management.tracing.export.zipkin.endpoint: http://zipkin:9411/api/v2/spans
+management.tracing.export.zipkin.endpoint: http://jaeger-collector.istio-system:9411/api/v2/spans
 
 server.shutdown: graceful
 spring.lifecycle.timeout-per-shutdown-phase: 10s

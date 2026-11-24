@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 #
-# 도커 컴포즈:
+# 도커 컴포즈(18장~):
+#
+#   HOST=localhost PORT=8443 HEALTH_URL=https://localhost:8443 USE_K8S=false ./test-em-all.bash
+#
+# 쿠버네티스 + 이스티오(18장~): 기본값 그대로
 #
 #   ./test-em-all.bash
 #
-# 쿠버네티스(17장~: 인그레스 + cert-manager):
-#
-#   HOST=minikube.me PORT=8443 USE_K8S=true ./test-em-all.bash
-#
-: ${HOST=localhost}
-: ${PORT=8443}
-: ${USE_K8S=false}
+: ${HOST=minikube.me}
+: ${PORT=443}
+: ${USE_K8S=true}
+: ${HEALTH_URL=https://health.minikube.me}
+: ${MGM_PORT=4004}
 : ${NAMESPACE=hands-on}
 : ${PROD_ID_REVS_RECS=1}
 : ${PROD_ID_NOT_FOUND=13}
@@ -176,18 +178,18 @@ function execComposite() {   # 16장: 도커 컴포즈 / 쿠버네티스 둘 다
   then
     docker compose exec -T product-composite "$@"
   else
-    kubectl -n $NAMESPACE exec deploy/product-composite -- "$@"
+    kubectl -n $NAMESPACE exec deploy/product-composite -c product-composite -- "$@"
   fi
 }
 
 function cbState() {
-  execComposite curl -s http://localhost/actuator/health \
+  execComposite curl -s http://localhost:${MGM_PORT}/actuator/health \
     | jq -r .components.circuitBreakers.details.product.details.state
 }
 
 function cbTransition() {      # $1 = -3, -2, -1 (최근 이벤트 순서)
   execComposite curl -s \
-    http://localhost/actuator/circuitbreakerevents/product/STATE_TRANSITION \
+    http://localhost:${MGM_PORT}/actuator/circuitbreakerevents/product/STATE_TRANSITION \
     | jq -r ".circuitBreakerEvents[$1].stateTransition"
 }
 
@@ -239,6 +241,8 @@ echo "Start Tests:" `date`
 echo "HOST=${HOST}"
 echo "PORT=${PORT}"
 echo "USE_K8S=${USE_K8S}"
+echo "HEALTH_URL=${HEALTH_URL}"
+echo "MGM_PORT=${MGM_PORT}"
 
 if [[ $@ == *"start"* ]]
 then
@@ -249,7 +253,7 @@ then
   docker compose up -d
 fi
 
-waitForService curl -k https://$HOST:$PORT/actuator/health
+waitForService curl -k $HEALTH_URL/actuator/health
 
 ACCESS_TOKEN=$(curl -k https://writer:secret-writer@$HOST:$PORT/oauth2/token \
   -d grant_type=client_credentials -d scope="product:read product:write" -s | jq .access_token -r)

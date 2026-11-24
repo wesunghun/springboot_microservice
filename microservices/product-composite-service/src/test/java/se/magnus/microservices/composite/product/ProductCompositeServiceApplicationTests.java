@@ -34,7 +34,7 @@ import se.magnus.api.exceptions.InvalidInputException;
 import se.magnus.api.exceptions.NotFoundException;
 import se.magnus.microservices.composite.product.services.ProductCompositeIntegration;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class}, properties = {"spring.security.oauth2.resourceserver.jwt.issuer-uri=", "spring.main.allow-bean-definition-overriding=true", "eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class}, properties = {"spring.security.oauth2.resourceserver.jwt.issuer-uri=", "spring.main.allow-bean-definition-overriding=true"})
 @AutoConfigureWebTestClient
 class ProductCompositeServiceApplicationTests {
 
@@ -50,19 +50,19 @@ class ProductCompositeServiceApplicationTests {
   void setUp() {
 
     // 조회: Mono / Flux 반환
-    when(compositeIntegration.getProduct(eq(PRODUCT_ID_OK), anyInt(), anyInt()))
+    when(compositeIntegration.getProduct(any(), eq(PRODUCT_ID_OK), anyInt(), anyInt()))
       .thenReturn(Mono.just(new Product(PRODUCT_ID_OK, "name", 1, "mock-address")));
-    when(compositeIntegration.getRecommendations(PRODUCT_ID_OK))
+    when(compositeIntegration.getRecommendations(any(), eq(PRODUCT_ID_OK)))
       .thenReturn(Flux.fromIterable(singletonList(
         new Recommendation(PRODUCT_ID_OK, 1, "author", 1, "content", "mock address"))));
-    when(compositeIntegration.getReviews(PRODUCT_ID_OK))
+    when(compositeIntegration.getReviews(any(), eq(PRODUCT_ID_OK)))
       .thenReturn(Flux.fromIterable(singletonList(
         new Review(PRODUCT_ID_OK, 1, "author", "subject", "content", "mock address"))));
 
-    when(compositeIntegration.getProduct(eq(PRODUCT_ID_NOT_FOUND), anyInt(), anyInt()))
+    when(compositeIntegration.getProduct(any(), eq(PRODUCT_ID_NOT_FOUND), anyInt(), anyInt()))
       .thenThrow(new NotFoundException("NOT FOUND: " + PRODUCT_ID_NOT_FOUND));
 
-    when(compositeIntegration.getProduct(eq(PRODUCT_ID_INVALID), anyInt(), anyInt()))
+    when(compositeIntegration.getProduct(any(), eq(PRODUCT_ID_INVALID), anyInt(), anyInt()))
       .thenThrow(new InvalidInputException("INVALID: " + PRODUCT_ID_INVALID));
 
     // 생성·삭제: Mock 기본값(null) 대신 빈 Mono 반환

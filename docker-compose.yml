@@ -79,6 +79,7 @@ services:
 
   mongodb:
     image: mongo:8.0.5
+    restart: always
     mem_limit: 512m
     ports:
       - "27017:27017"
@@ -94,6 +95,7 @@ services:
 
   mysql:
     image: mysql:9.2.0
+    restart: always
     mem_limit: 512m
     ports:
       - "3307:3306"
@@ -110,6 +112,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.0.7-management
+    restart: always
     mem_limit: 512m
     ports:
       - 5672:5672
@@ -156,12 +159,12 @@ services:
     volumes:
       - $PWD/config-repo:/config-repo
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost/actuator/health"]
+      test: ["CMD", "curl", "-fs", "http://localhost:4004/actuator/health"]
       interval: 5s
       timeout: 2s
       retries: 60
   
-  zipkin:
+  jaeger-collector.istio-system:     # 18장: 쿠버네티스와 같은 주소로 보내기 위한 이름
     image: openzipkin/zipkin:3.6.1
     restart: always
     mem_limit: 1024m

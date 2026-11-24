@@ -25,7 +25,7 @@ public class HealthCheckConfiguration {
   private final WebClient webClient;
 
   public HealthCheckConfiguration(WebClient.Builder webClientBuilder) {
-    this.webClient = webClientBuilder.build();      // @LoadBalanced 빌더 (③)
+    this.webClient = webClientBuilder.build();      // 16장: 일반 빌더 — http://product 는 쿠버네티스 서비스 DNS
   }
 
   @Bean
@@ -33,10 +33,10 @@ public class HealthCheckConfiguration {
 
     final Map<String, ReactiveHealthIndicator> registry = new LinkedHashMap<>();
 
-    registry.put("product",           () -> getHealth("http://product"));
-    registry.put("recommendation",    () -> getHealth("http://recommendation"));
-    registry.put("review",            () -> getHealth("http://review"));
-    registry.put("product-composite", () -> getHealth("http://product-composite"));
+    registry.put("product",           () -> getHealth("http://product:4004"));
+    registry.put("recommendation",    () -> getHealth("http://recommendation:4004"));
+    registry.put("review",            () -> getHealth("http://review:4004"));
+    registry.put("product-composite", () -> getHealth("http://product-composite:4004"));
 
     return CompositeReactiveHealthContributor.fromMap(registry);
   }

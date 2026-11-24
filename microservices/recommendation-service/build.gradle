@@ -23,10 +23,10 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
-	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-brave'
+	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 	implementation 'org.springframework.boot:spring-boot-zipkin'
-	implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'

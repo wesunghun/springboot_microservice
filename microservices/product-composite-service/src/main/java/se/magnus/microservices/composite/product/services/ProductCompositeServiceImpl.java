@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RestController;
 
 import reactor.core.publisher.Mono;
@@ -69,19 +69,32 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
   }
 
   @Override
-  public Mono<ProductAggregate> getProduct(int productId, @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
-    @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent) {
+  public Mono<ProductAggregate> getProduct(HttpHeaders requestHeaders, int productId, int delay, int faultPercent) {
+    HttpHeaders headers = getHeaders(requestHeaders, "X-group");    // 18장: 라우팅용 헤더만 골라 전달
     return Mono.zip(
         values -> createProductAggregate(
             (Product) values[0],
             (List<Recommendation>) values[1],
             (List<Review>) values[2],
             serviceUtil.getServiceAddress()),
-        integration.getProduct(productId, delay, faultPercent),
-        integration.getRecommendations(productId).collectList(),
-        integration.getReviews(productId).collectList())
+        integration.getProduct(headers, productId, delay, faultPercent),
+        integration.getRecommendations(headers, productId).collectList(),
+        integration.getReviews(headers, productId).collectList())
         .doOnError(ex -> LOG.warn("getCompositeProduct failed: {}", ex.toString()))
         .log(LOG.getName(), FINE);
+  }
+
+  private HttpHeaders getHeaders(HttpHeaders requestHeaders, String... headers) {
+    LOG.trace("Will look for {} headers: {}", headers.length, headers);
+    HttpHeaders h = new HttpHeaders();
+    for (String header : headers) {
+      List<String> value = requestHeaders.get(header);
+      if (value != null) {
+        h.addAll(header, value);
+      }
+    }
+    LOG.trace("Will transfer {}, headers: {}", h.size(), h);
+    return h;
   }
 
   @Override
